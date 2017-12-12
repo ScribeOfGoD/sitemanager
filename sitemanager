@@ -1,0 +1,68 @@
+#!/usr/bin/env php
+<?php
+
+define('HOSTS_FILE', "/etc/hosts");
+define('VHOST_FILE', "/Applications/MAMP/conf/apache/extra/httpd-vhosts.conf");
+
+$action = isset($argv[1]) ? $argv[1] : null;
+$arg1 = isset($argv[2]) ? $argv[2] : null;
+$arg2 = isset($argv[3]) ? $argv[3] : null;
+
+$vhostText = getVirtualHost($arg1, $arg2);
+$hostsText = getHosts($arg1);
+
+if ($action=='add') {
+	add($arg1, $hostsText, $vhostText);
+	print "Added {$arg1}.local virtual host".PHP_EOL;
+}elseif($action=='remove') {
+	remove($arg1, $hostsText, $vhostText);
+	print "Removed {$arg1}.local virtual host".PHP_EOL;
+}elseif($action=='rename') {
+	edit($arg1, $arg2, $hostsText, $vhostText);
+	print "Renamed {$arg1}.local to {$arg2}.local".PHP_EOL;
+}else{
+	help();
+}
+
+function edit($name, $nameNew) {
+	if (is_null($name) || is_null($nameNew)) help();
+
+	remove($name);
+	add($nameNew);
+}
+function add($name) {
+	if (is_null($name)) help();
+	file_put_contents(HOSTS_FILE, getHosts($name), FILE_APPEND);
+	file_put_contents(VHOST_FILE, getVirtualHost($name), FILE_APPEND);
+}
+function remove($name) {
+	if (is_null($name)) help();
+
+	$hosts = @file_get_contents(HOSTS_FILE);
+	$vhost = @file_get_contents(VHOST_FILE);
+
+	$hostsText = getHosts($name);
+	$vhostText = getVirtualHost($name);
+
+	if (!$hosts || !$vhost) help();
+	$hostsText = str_replace($hostsText, '', $hosts);
+	$vhostText = str_replace($vhostText, '', $vhost);
+
+	if ($hosts!==$hostsText)
+		file_put_contents(HOSTS_FILE, $hostsText);
+	if ($vhost!==$vhostText)
+		file_put_contents(VHOST_FILE, $vhostText);
+}
+
+function help() {
+	print "Set Up:\n1. Edit constants for Hosts file / Vhost file (following constants are below)\n2. Chown Hosts file and Vhost file (replace _www with your apache user):\n$ sudo chown _www:_www ".HOSTS_FILE."\n$ sudo chown _www:_www ".VHOST_FILE."\nUsage:php sitemanager add {name}\nphp sitemanager remove {name}";
+	die();
+}
+
+function getVirtualHost(string $n1, $n2 = '') {
+	$n2 = (string)$n2;
+	return !is_null($n1) ? "\n<VirtualHost *:80>\n    DocumentRoot \"/Applications/MAMP/htdocs/{$n1}/{$n2}\"\n    ServerName {$n1}.local\n    ErrorLog \"logs/{$n1}.local-error_log\"\n    CustomLog \"logs/{$n1}.local-access_log\" common\n</VirtualHost>\n" : null;
+}
+function getHosts(string $n1) {
+	return !is_null($n1) ? "\n127.0.0.1\t\t{$n1}.local\n" : null;
+}
