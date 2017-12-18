@@ -5,6 +5,7 @@ namespace YeTii\SiteManager\Commands;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use YeTii\SiteManager\Hosts;
 use YeTii\SiteManager\Traits\HasSiteName;
@@ -16,6 +17,9 @@ use YeTii\SiteManager\VirtualHost;
 class Add extends Command
 {
     use HasSiteName;
+
+    private $vhostsPath;
+    private $hostsPath;
 
     /**
      * Configure the command options.
@@ -31,6 +35,20 @@ class Add extends Command
                 'name',
                 InputArgument::REQUIRED,
                 'The name of the site without a TLD.'
+            )
+            ->addOption(
+                'vhosts',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Specify a path to the vhosts.conf file.',
+                '/etc/apache2/sites-available/sites.conf'
+            )
+            ->addOption(
+                'hosts',
+                null,
+                InputOption::VALUE_REQUIRED,
+                'Specify a path to the hosts file.',
+                '/etc/hosts'
             );
     }
 
@@ -45,6 +63,8 @@ class Add extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $this->setSiteName($input->getArgument('name'));
+        $this->vhostsPath = $input->getOption('vhosts');
+        $this->hostsPath = $input->getOption('hosts');
 
         $this->addVhost();
         $this->addHost();
@@ -59,7 +79,7 @@ class Add extends Command
     public function addVhost()
     {
         if ((bool)file_put_contents(
-            VirtualHost::DEFAULT_MAC_PATH,
+            $this->vhostsPath,
             VirtualHost::get($this->getSiteName()),
             FILE_APPEND
         )) {
@@ -76,7 +96,7 @@ class Add extends Command
     public function addHost()
     {
         if ((bool)file_put_contents(
-            Hosts::DEFAULT_MAC_PATH,
+            $this->hostsPath,
             Hosts::get($this->getSiteName()),
             FILE_APPEND
         )) {
