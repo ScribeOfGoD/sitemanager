@@ -7,6 +7,5 @@ if (file_exists(__DIR__.'/../../../autoload.php')) {
 }
 $app = new Symfony\Component\Console\Application('Site Manager');
 $app->add(new YeTii\SiteManager\Commands\Add());
-$app->add(new YeTii\SiteManager\Commands\Edit());
 $app->add(new YeTii\SiteManager\Commands\Remove());
 $app->run();
