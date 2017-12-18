@@ -1,116 +1,12 @@
 #!/usr/bin/env php
 <?php
-
-define('HOSTS_FILE', "/etc/hosts");
-define('VHOST_FILE', "/Applications/MAMP/conf/apache/extra/httpd-vhosts.conf");
-
-$action = isset($argv[1]) ? $argv[1] : null;
-$arg1 = isset($argv[2]) ? $argv[2] : null;
-$arg2 = isset($argv[3]) ? $argv[3] : null;
-
-$vhostText = getVirtualHost($arg1, $arg2);
-$hostsText = getHosts($arg1);
-
-if ($action == 'add') {
-    add($arg1, $hostsText, $vhostText);
-    print "Added {$arg1}.local virtual host".PHP_EOL;
-} elseif ($action == 'remove') {
-    remove($arg1, $hostsText, $vhostText);
-    print "Removed {$arg1}.local virtual host".PHP_EOL;
-} elseif ($action == 'rename') {
-    edit($arg1, $arg2, $hostsText, $vhostText);
-    print "Renamed {$arg1}.local to {$arg2}.local".PHP_EOL;
+if (file_exists(__DIR__.'/../../../autoload.php')) {
+    require __DIR__.'/../../../autoload.php';
 } else {
-    help();
+    require __DIR__.'/../vendor/autoload.php';
 }
-
-function edit($name, $nameNew)
-{
-    if (is_null($name) || is_null($nameNew)) {
-        help();
-    }
-
-    remove($name);
-    add($nameNew);
-}
-
-function add($name)
-{
-    if (is_null($name)) {
-        help();
-    }
-    file_put_contents(HOSTS_FILE, getHosts($name), FILE_APPEND);
-    file_put_contents(VHOST_FILE, getVirtualHost($name), FILE_APPEND);
-}
-
-function remove($name)
-{
-    if (is_null($name)) {
-        help();
-    }
-
-    $hosts = @file_get_contents(HOSTS_FILE);
-    $vhost = @file_get_contents(VHOST_FILE);
-
-    $hostsText = getHosts($name);
-    $vhostText = getVirtualHost($name);
-
-    if (!$hosts || !$vhost) {
-        help();
-    }
-    $hostsText = str_replace($hostsText, '', $hosts);
-    $vhostText = str_replace($vhostText, '', $vhost);
-
-    if ($hosts !== $hostsText) {
-        file_put_contents(HOSTS_FILE, $hostsText);
-    }
-    if ($vhost !== $vhostText) {
-        file_put_contents(VHOST_FILE, $vhostText);
-    }
-}
-
-function help()
-{
-    $vhost = VHOST_FILE;
-    $host = HOSTS_FILE;
-    print <<<TXT
-
-Set Up:
-1. Edit constants for Hosts file / Vhost file (following constants are below)
-2. Chown Hosts file and Vhost file (replace _www with your apache user):
-    $ sudo chown _www:_www {$host}
-    $ sudo chown _www:_www {$vhost}
-
-Usage:
-    php sitemanager add {name}
-    php sitemanager remove {name}
-
-TXT;
-    die();
-}
-
-function getVirtualHost(string $n1 = null, $n2 = '')
-{
-    $n2 = (string)$n2;
-    return !is_null($n1) ?
-        <<<TXT
-<VirtualHost *:80>
-    DocumentRoot "/Applications/MAMP/htdocs/{$n1}/{$n2}"
-    ServerName {$n1}.local
-    ErrorLog "logs/{$n1}.local-error_log"
-    CustomLog "logs/{$n1}.local-access_log" common
-</VirtualHost>
-
-TXT
-        : '';
-}
-
-function getHosts(string $n1 = null)
-{
-    return !is_null($n1) ?
-        <<<TXT
-127.0.0.1       {$n1}.local
-
-TXT
-        : '';
-}
+$app = new Symfony\Component\Console\Application('Site Manager');
+$app->add(new YeTii\SiteManager\Commands\Add());
+$app->add(new YeTii\SiteManager\Commands\Edit());
+$app->add(new YeTii\SiteManager\Commands\Remove());
+$app->run();
