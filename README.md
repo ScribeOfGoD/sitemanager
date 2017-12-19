@@ -21,7 +21,31 @@ $ composer global require undeadyetii/sitemanager
 
 ## Usage
 
-...
+**Adding a new site**
+
+```bash
+sitemanager add {{site_name}}
+```
+
+**Removing a site**
+
+```bash
+sitemanager remove {{site_name}}
+```
+
+**Specifying a custom hosts/vhosts file**
+
+```bash
+sitemanager {{command}} --vhosts path/to/vhosts.conf
+sitemanager {{command}} --hosts path/to/hosts
+```
+
+**For more information on a command**
+
+```bash
+sitemanager add --help
+sitemanager remove --help
+```
 
 ## Testing
 
