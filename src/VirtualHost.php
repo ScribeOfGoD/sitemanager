@@ -7,8 +7,6 @@ class VirtualHost
     const ERROR_UNABLE_TO_ADD = 'Unable to add the specified vhost.';
     const ERROR_UNABLE_TO_REMOVE = 'Unable to remove the specified vhost.';
 
-    const DEFAULT_MAC_PATH = '/etc/apache2/sites-available/sites.conf';
-
     public static function get(string $n1 = null, string $n2 = '')
     {
         return !is_null($n1) ?
