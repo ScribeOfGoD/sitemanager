@@ -40,7 +40,7 @@ class Add extends Command
                 'vhosts',
                 null,
                 InputOption::VALUE_REQUIRED,
-                'Specify a path to the vhosts.conf file.',
+                'Specify a path to the vhosts config file.',
                 '/etc/apache2/sites-available/sites.conf'
             )
             ->addOption(
