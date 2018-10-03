@@ -2,15 +2,6 @@
 
 A CLI local site management written in PHP.
 
-## Structure
-
-```
-bin/
-src/
-tests/
-vendor/
-```
-
 ## Install
 
 Via Composer
